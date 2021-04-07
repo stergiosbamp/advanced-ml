@@ -102,7 +102,7 @@ if __name__ == '__main__':
             print('\t{}'.format(imb_model))
             imb_model.run(scoring=SCORING)
 
-            bal_model = BalancedModelling(clf, TomekLinks())
+            bal_model = BalancedModelling(clf, upsampler)
             print('\t{}'.format(bal_model))
             bal_model.run(scoring=SCORING)
 
