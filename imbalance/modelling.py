@@ -92,7 +92,7 @@ if __name__ == '__main__':
     DOWNSAMPLERS = [TomekLinks(), RandomUnderSampler(random_state=4)]
     CLASSIFIERS = [
         RandomForestClassifier(n_estimators=200, random_state=4),
-        GradientBoostingClassifier(n_estimators=200, random_state=4, max_depth=10, max_features='auto')
+        GradientBoostingClassifier(random_state=4)
     ]
 
     for upsampler in UPSAMPLERS:
