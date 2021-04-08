@@ -1,9 +1,7 @@
-import pandas as pd
-
 from imblearn.over_sampling import SMOTE, ADASYN, BorderlineSMOTE
-from imblearn.under_sampling import NearMiss, RandomUnderSampler, TomekLinks
+from imblearn.under_sampling import RandomUnderSampler, TomekLinks
 from imblearn.pipeline import Pipeline
-from imblearn.metrics import geometric_mean_score, classification_report_imbalanced
+from imblearn.metrics import geometric_mean_score
 
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.model_selection import cross_validate
@@ -13,7 +11,7 @@ from sklearn.metrics import balanced_accuracy_score, make_scorer, f1_score
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Input
 from keras.metrics import AUC
-
+from keras.wrappers.scikit_learn import KerasClassifier
 
 from dataloader import DataLoader
 
@@ -21,7 +19,7 @@ from dataloader import DataLoader
 class Modelling:
 
     def __init__(self, classifier):
-        self.x, self.y = DataLoader().get_x_y()
+        self.x, self.y = DataLoader().get_x_y()  # Whole dataset for cross-validation
         # self.x_train, self.x_test, self.y_train, self.y_test = DataLoader().get_train_test()
 
         self.classifier = classifier
@@ -52,7 +50,7 @@ class ImbalancedModelling(Modelling):
             print("\t\tAverage {} is: {}".format(score, results[cv_key].mean()))
 
     def __str__(self):
-        return 'ImbalancedModelling({})'.format(clf)
+        return 'ImbalancedModelling({})'.format(self.classifier)
 
 
 class BalancedModelling(Modelling):
@@ -84,31 +82,16 @@ class BalancedModelling(Modelling):
             print("\t\tAverage {} is: {}".format(score, results[cv_key].mean()))
 
     def __str__(self):
-        return 'BalancedModelling({}, {})'.format(clf, self.resampler)
+        return 'BalancedModelling({}, {})'.format(self.classifier, self.resampler)
 
 
 class DeepModelling:
 
-    def __init__(self):
-        self.x_train, self.x_test, self.y_train, self.y_test = DataLoader().get_train_test()
-
-        # One-hot encode target
-        self.y_train = pd.get_dummies(self.y_train)
-        self.y_test = pd.get_dummies(self.y_test)
-
-        self.model = self.__init_model()
-
-    def run(self):
-        history = self.model.fit(x=self.x_train, y=self.y_train, batch_size=64, epochs=100)
-        # TODO: Plot history losses via Evaluator
-
-        results = self.model.evaluate(self.x_test, self.y_test, return_dict=True)
-        print(results)
-
-    def __init_model(self):
+    @staticmethod
+    def init_model(input_dim=None):
         model = Sequential()
 
-        model.add(Input(shape=(self.x_train.shape[1],)))
+        model.add(Input(shape=(input_dim,)))
         model.add(Dense(128, activation='relu'))
         model.add(Dropout(0.2))
         model.add(Dense(64, activation='relu'))
@@ -132,7 +115,8 @@ if __name__ == '__main__':
     DOWNSAMPLERS = [TomekLinks(), RandomUnderSampler(random_state=4)]
     CLASSIFIERS = [
         RandomForestClassifier(n_estimators=200, random_state=4),
-        GradientBoostingClassifier(random_state=4)
+        GradientBoostingClassifier(random_state=4),
+        KerasClassifier(build_fn=DeepModelling.init_model, input_dim=21, batch_size=64, epochs=100)
     ]
 
     for upsampler in UPSAMPLERS:
