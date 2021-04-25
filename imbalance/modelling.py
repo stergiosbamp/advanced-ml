@@ -45,7 +45,10 @@ class ImbalancedModelling(Modelling):
 
     def __init__(self, classifier):
         super().__init__(classifier)
-        self.model_id = str(self.classifier)
+        if isinstance(self.classifier, KerasClassifier):
+            self.model_id = 'MLP'
+        else:
+            self.model_id = str(self.classifier)
 
     def run(self, scoring):
         model = Pipeline([
@@ -89,7 +92,10 @@ class BalancedModelling(Modelling):
     def __init__(self, classifier, resampler):
         super().__init__(classifier)
         self.resampler = resampler
-        self.model_id = str(self.resampler) + "-" + str(self.classifier)
+        if isinstance(self.classifier, KerasClassifier):
+            self.model_id = str(self.resampler) + "-" + 'MLP'
+        else:
+            self.model_id = str(self.resampler) + "-" + str(self.classifier)
 
     def run(self, scoring):
         # Note the Pipeline from "imblearn" to avoid data leakage!
