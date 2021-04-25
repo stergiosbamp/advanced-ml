@@ -37,17 +37,26 @@ class Modelling:
             with dest.open('w', encoding='utf-8') as f:
                 json.dump(results, f)
 
+    def model_has_run(self):
+        raise NotImplemented('Implement concrete class of Modelling')
+
 
 class ImbalancedModelling(Modelling):
 
     def __init__(self, classifier):
         super().__init__(classifier)
+        self.model_id = str(self.classifier)
 
     def run(self, scoring):
         model = Pipeline([
             ('scaler', StandardScaler()),
             ('classifier', self.classifier)
         ])
+
+        if self.model_has_run():
+            print("\tModel has already run, skipping...")
+            return
+
         results = cross_validate(estimator=model,
                                  X=self.x,
                                  y=self.y,
@@ -62,7 +71,14 @@ class ImbalancedModelling(Modelling):
             data_to_write[cv_key] = mean_metric
             print("\t\tAverage {} is: {}".format(score, mean_metric))
 
-        self.save_results(data_to_write, 'imbalance', str(model.named_steps['classifier']))
+        self.save_results(data_to_write, 'imbalance', self.model_id)
+
+    def model_has_run(self):
+        dest = pathlib.Path(self.RESULTS_PATH, 'imbalance', self.model_id)
+        dest = dest.with_suffix('.json')
+        if dest.exists():
+            return True
+        return False
 
     def __str__(self):
         return 'ImbalancedModelling({})'.format(self.classifier)
@@ -73,6 +89,7 @@ class BalancedModelling(Modelling):
     def __init__(self, classifier, resampler):
         super().__init__(classifier)
         self.resampler = resampler
+        self.model_id = str(self.resampler) + "-" + str(self.classifier)
 
     def run(self, scoring):
         # Note the Pipeline from "imblearn" to avoid data leakage!
@@ -85,6 +102,11 @@ class BalancedModelling(Modelling):
             ('scaler', StandardScaler()),
             ('classifier', self.classifier)
         ])
+
+        if self.model_has_run():
+            print("\tModel has already run, skipping...")
+            return
+
         results = cross_validate(estimator=model,
                                  X=self.x,
                                  y=self.y,
@@ -102,7 +124,14 @@ class BalancedModelling(Modelling):
 
         self.save_results(data_to_write,
                           'balance',
-                          str(model.named_steps['resampler']) + "-" + str(model.named_steps['classifier']))
+                          self.model_id)
+
+    def model_has_run(self):
+        dest = pathlib.Path(self.RESULTS_PATH, 'balance', self.model_id)
+        dest = dest.with_suffix('.json')
+        if dest.exists():
+            return True
+        return False
 
     def __str__(self):
         return 'BalancedModelling({}, {})'.format(self.classifier, self.resampler)
