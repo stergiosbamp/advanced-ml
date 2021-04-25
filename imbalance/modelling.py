@@ -1,3 +1,6 @@
+import pathlib
+import json
+
 from imblearn.over_sampling import SMOTE, ADASYN, BorderlineSMOTE
 from imblearn.under_sampling import RandomUnderSampler, TomekLinks
 from imblearn.pipeline import Pipeline
@@ -17,6 +20,7 @@ from dataloader import DataLoader
 
 
 class Modelling:
+    RESULTS_PATH = 'results/'
 
     def __init__(self, classifier):
         self.x, self.y = DataLoader().get_x_y()  # Whole dataset for cross-validation
@@ -26,6 +30,12 @@ class Modelling:
 
     def run(self, scoring):
         raise NotImplemented('Implement concrete class of Modelling')
+
+    def save_results(self, results, dist_type, filename):
+            dest = pathlib.Path(self.RESULTS_PATH, dist_type, filename)
+            dest = dest.with_suffix('.json')
+            with dest.open('w', encoding='utf-8') as f:
+                json.dump(results, f)
 
 
 class ImbalancedModelling(Modelling):
@@ -44,10 +54,15 @@ class ImbalancedModelling(Modelling):
                                  # cv=cv,
                                  scoring=scoring,
                                  n_jobs=-1)
+        data_to_write = {}
 
         for score in scoring.keys():
             cv_key = 'test_' + score  # construct the key of the cv to obtain avg
-            print("\t\tAverage {} is: {}".format(score, results[cv_key].mean()))
+            mean_metric = results[cv_key].mean()
+            data_to_write[cv_key] = mean_metric
+            print("\t\tAverage {} is: {}".format(score, mean_metric))
+
+        self.save_results(data_to_write, 'imbalance', str(model.named_steps['classifier']))
 
     def __str__(self):
         return 'ImbalancedModelling({})'.format(self.classifier)
@@ -77,9 +92,17 @@ class BalancedModelling(Modelling):
                                  scoring=scoring,
                                  n_jobs=-1)
 
+        data_to_write = {}
+
         for score in scoring.keys():
             cv_key = 'test_' + score  # construct the key of the cv to obtain avg
-            print("\t\tAverage {} is: {}".format(score, results[cv_key].mean()))
+            mean_metric = results[cv_key].mean()
+            data_to_write[cv_key] = mean_metric
+            print("\t\tAverage {} is: {}".format(score, mean_metric))
+
+        self.save_results(data_to_write,
+                          'balance',
+                          str(model.named_steps['resampler']) + "-" + str(model.named_steps['classifier']))
 
     def __str__(self):
         return 'BalancedModelling({}, {})'.format(self.classifier, self.resampler)
@@ -130,4 +153,13 @@ if __name__ == '__main__':
             print('\t{}'.format(bal_model))
             bal_model.run(scoring=SCORING)
 
-    # TODO: Do the same loop for DOWNSAMPLERS
+    for downsampler in DOWNSAMPLERS:
+        print("Downsampler: {}".format(downsampler))
+        for clf in CLASSIFIERS:
+            imb_model = ImbalancedModelling(clf)
+            print('\t{}'.format(imb_model))
+            imb_model.run(scoring=SCORING)
+
+            bal_model = BalancedModelling(clf, downsampler)
+            print('\t{}'.format(bal_model))
+            bal_model.run(scoring=SCORING)
