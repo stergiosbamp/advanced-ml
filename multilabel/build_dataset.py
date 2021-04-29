@@ -4,6 +4,7 @@ import PIL
 import shutil
 import tarfile
 import urllib
+import zipfile
 
 
 def build_dataset(urls, dest_dir="data/chest_x_rays", target_size=(299,299)):
@@ -43,6 +44,19 @@ def build_dataset(urls, dest_dir="data/chest_x_rays", target_size=(299,299)):
         # delete unused dir
         print("removing unused dir")
         shutil.rmtree(extract_dir)
+
+
+def zip_dataset(output_filename, dataset_dir="data/chest_x_ray"):
+    
+    # zip dataset in external folder (e.g. Google Drive)
+    shutil.make_archive(output_file, "zip", dataset_dir)
+
+
+def build_dataset_from_zip(input_file, dest_dir="data/chest_x_ray"):
+
+    # build dataset from external zip file (e.g. Google Drive)
+    with zipfile.ZipFile(input_file) as f:
+        f.extractall(dest_dir)
 
 
 if __name__ == "__main__":
