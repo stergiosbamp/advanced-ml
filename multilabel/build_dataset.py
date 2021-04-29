@@ -9,6 +9,10 @@ import zipfile
 
 def build_dataset(urls, dest_dir="data/chest_x_rays", target_size=(299,299)):
 
+    # if dest_dir doesn't exist, make it
+    if not os.path.exists(dest_dir):
+        os.makedirs(dest_dir)
+
     for i, url in enumerate(urls):
         # set a filename for the downlaod
         fn = f"images_{i + 1:02d}.tar.gz"
