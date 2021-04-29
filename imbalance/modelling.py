@@ -10,6 +10,7 @@ from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.model_selection import cross_validate
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import balanced_accuracy_score, make_scorer, f1_score
+from sklearn.model_selection import StratifiedKFold
 
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Input
@@ -17,6 +18,7 @@ from keras.metrics import AUC
 from keras.wrappers.scikit_learn import KerasClassifier
 
 from dataloader import DataLoader
+from evaluation import Evaluator
 
 
 class Modelling:
@@ -27,8 +29,9 @@ class Modelling:
         # self.x_train, self.x_test, self.y_train, self.y_test = DataLoader().get_train_test()
 
         self.classifier = classifier
+        self.evaluator = Evaluator()
 
-    def run(self, scoring):
+    def run(self):
         raise NotImplemented('Implement concrete class of Modelling')
 
     def save_results(self, results, dist_type, filename):
@@ -50,7 +53,7 @@ class ImbalancedModelling(Modelling):
         else:
             self.model_id = str(self.classifier)
 
-    def run(self, scoring):
+    def run(self):
         model = Pipeline([
             ('scaler', StandardScaler()),
             ('classifier', self.classifier)
@@ -60,21 +63,24 @@ class ImbalancedModelling(Modelling):
             print("\tModel has already run, skipping...")
             return
 
-        results = cross_validate(estimator=model,
-                                 X=self.x,
-                                 y=self.y,
-                                 # cv=cv,
-                                 scoring=scoring,
-                                 n_jobs=-1)
-        data_to_write = {}
+        cross_validator = StratifiedKFold(n_splits=5)
 
-        for score in scoring.keys():
-            cv_key = 'test_' + score  # construct the key of the cv to obtain avg
-            mean_metric = results[cv_key].mean()
-            data_to_write[cv_key] = mean_metric
-            print("\t\tAverage {} is: {}".format(score, mean_metric))
+        for train_idx, test_idx in cross_validator.split(self.x, self.y):
+            x_train, x_test = self.x.iloc[train_idx], self.x.iloc[test_idx]
+            y_train, y_test = self.y[train_idx], self.y[test_idx]
 
-        self.save_results(data_to_write, 'imbalance', self.model_id)
+            model.fit(x_train, y_train)
+            y_pred = model.predict(x_test)
+            y_pred_prob = model.predict_proba(x_test)
+
+            self.evaluator.log_metrics(y_test, y_pred, y_pred_prob)
+
+        results = self.evaluator.get_avg_metrics()
+
+        for key, value in results.items():
+            print("\t\tAverage {} is: {}".format(key, value))
+
+        self.save_results(results, 'imbalance', self.model_id)
 
     def model_has_run(self):
         dest = pathlib.Path(self.RESULTS_PATH, 'imbalance', self.model_id)
@@ -97,11 +103,8 @@ class BalancedModelling(Modelling):
         else:
             self.model_id = str(self.resampler) + "-" + str(self.classifier)
 
-    def run(self, scoring):
+    def run(self):
         # Note the Pipeline from "imblearn" to avoid data leakage!
-
-        # To obtain metrics such as roc_auc we might have to manually iterate on CV splits
-        # since it can't be applied directly on multi-class problems
 
         model = Pipeline([
             ('resampler', self.resampler),
@@ -113,24 +116,24 @@ class BalancedModelling(Modelling):
             print("\tModel has already run, skipping...")
             return
 
-        results = cross_validate(estimator=model,
-                                 X=self.x,
-                                 y=self.y,
-                                 # cv=cv,
-                                 scoring=scoring,
-                                 n_jobs=-1)
+        cross_validator = StratifiedKFold(n_splits=5)
 
-        data_to_write = {}
+        for train_idx, test_idx in cross_validator.split(self.x, self.y):
+            x_train, x_test = self.x.iloc[train_idx], self.x.iloc[test_idx]
+            y_train, y_test = self.y[train_idx], self.y[test_idx]
 
-        for score in scoring.keys():
-            cv_key = 'test_' + score  # construct the key of the cv to obtain avg
-            mean_metric = results[cv_key].mean()
-            data_to_write[cv_key] = mean_metric
-            print("\t\tAverage {} is: {}".format(score, mean_metric))
+            model.fit(x_train, y_train)
+            y_pred = model.predict(x_test)
+            y_pred_prob = model.predict_proba(x_test)
 
-        self.save_results(data_to_write,
-                          'balance',
-                          self.model_id)
+            self.evaluator.log_metrics(y_test, y_pred, y_pred_prob)
+
+        results = self.evaluator.get_avg_metrics()
+
+        for key, value in results.items():
+            print("\t\tAverage {} is: {}".format(key, value))
+
+        self.save_results(results, 'balance', self.model_id)
 
     def model_has_run(self):
         dest = pathlib.Path(self.RESULTS_PATH, 'balance', self.model_id)
@@ -163,12 +166,6 @@ class DeepModelling:
 
 if __name__ == '__main__':
 
-    # Define constants for the experiments
-    SCORING = {
-        'b_acc': make_scorer(balanced_accuracy_score),
-        'g_mean': make_scorer(geometric_mean_score),
-        'f1': make_scorer(f1_score, average='macro')
-    }
     UPSAMPLERS = [SMOTE(random_state=4), BorderlineSMOTE(random_state=4), ADASYN(random_state=4)]
     DOWNSAMPLERS = [TomekLinks(), RandomUnderSampler(random_state=4)]
     CLASSIFIERS = [
@@ -182,19 +179,19 @@ if __name__ == '__main__':
         for clf in CLASSIFIERS:
             imb_model = ImbalancedModelling(clf)
             print('\t{}'.format(imb_model))
-            imb_model.run(scoring=SCORING)
+            imb_model.run()
 
             bal_model = BalancedModelling(clf, upsampler)
             print('\t{}'.format(bal_model))
-            bal_model.run(scoring=SCORING)
+            bal_model.run()
 
     for downsampler in DOWNSAMPLERS:
         print("Downsampler: {}".format(downsampler))
         for clf in CLASSIFIERS:
             imb_model = ImbalancedModelling(clf)
             print('\t{}'.format(imb_model))
-            imb_model.run(scoring=SCORING)
+            imb_model.run()
 
             bal_model = BalancedModelling(clf, downsampler)
             print('\t{}'.format(bal_model))
-            bal_model.run(scoring=SCORING)
+            bal_model.run()
