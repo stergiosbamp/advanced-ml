@@ -6,6 +6,10 @@ import tarfile
 import urllib
 import zipfile
 
+import pandas as pd
+
+from sklearn.preprocessing import MultiLabelBinarizer
+
 
 def build_dataset(urls, dest_dir="data/chest_x_rays", target_size=(299,299)):
 
@@ -63,6 +67,44 @@ def build_dataset_from_zip(input_file, dest_dir="data/chest_x_ray"):
         f.extractall(dest_dir)
 
 
+def build_binarized_annotations(
+    data_entry_csv="data/Data_Entry_2017_v2020.csv",
+    dest_dir="data"):
+    
+    # read data entry
+    df = pd.read_csv(data_entry_csv)
+
+    # keep only filenames and labels
+    df = df[["Image Index", "Finding Labels"]]
+
+    # rename columns
+    df = df.rename(columns={"Image Index": "filename", "Finding Labels": "labels"})
+
+    # define function to parse label string
+    def parse_label(label_string):
+        parsed = label_string.split("|")
+        if parsed == ["No Finding"]:
+            parsed = []
+        return parsed
+    
+    # parse labels
+    df["labels"] = df["labels"].apply(parse_label)
+
+    # fit MultiLabelBinarizer
+    mlb = MultiLabelBinarizer()
+    mlb.fit(df["labels"])
+
+    # transform labels
+    df["binarized_labels"] = df["labels"].apply(lambda x: mlb.transform([x])[0])
+
+    # save csv with image paths and annotations
+    df.to_csv(dest_dir + "/" "binarized_annotations.csv")
+
+    # save csv with class mapping
+    class_mapping = pd.Series(mlb.classes_)
+    class_mapping.to_csv(dest_dir + "/" + "class_mapping.csv", header=False)
+
+
 if __name__ == "__main__":
 
     # URLs for the zip files
@@ -81,4 +123,5 @@ if __name__ == "__main__":
     	'https://nihcc.box.com/shared/static/ioqwiy20ihqwyr8pf4c24eazhh281pbu.gz'
     ]
 
-    build_dataset(urls)
+    #build_dataset(urls)
+    build_binarized_annotations()
