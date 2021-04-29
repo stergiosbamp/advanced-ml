@@ -54,13 +54,13 @@ def build_dataset(urls, dest_dir="data/chest_x_rays", target_size=(299,299)):
         shutil.rmtree(extract_dir)
 
 
-def zip_dataset(output_filename, dataset_dir="data/chest_x_ray"):
+def zip_dataset(output_filename, dataset_dir="data/chest_x_rays"):
     
     # zip dataset in external folder (e.g. Google Drive)
     shutil.make_archive(output_filename, "zip", dataset_dir)
 
 
-def build_dataset_from_zip(input_file, dest_dir="data/chest_x_ray"):
+def build_dataset_from_zip(input_file, dest_dir="data/chest_x_rays"):
 
     # build dataset from external zip file (e.g. Google Drive)
     with zipfile.ZipFile(input_file) as f:
