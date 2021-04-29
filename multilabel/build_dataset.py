@@ -57,7 +57,7 @@ def build_dataset(urls, dest_dir="data/chest_x_rays", target_size=(299,299)):
 def zip_dataset(output_filename, dataset_dir="data/chest_x_ray"):
     
     # zip dataset in external folder (e.g. Google Drive)
-    shutil.make_archive(output_file, "zip", dataset_dir)
+    shutil.make_archive(output_filename, "zip", dataset_dir)
 
 
 def build_dataset_from_zip(input_file, dest_dir="data/chest_x_ray"):
