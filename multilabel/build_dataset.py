@@ -97,11 +97,13 @@ def build_binarized_annotations(
     # transform labels
     df["binarized_labels"] = df["labels"].apply(lambda x: mlb.transform([x])[0])
 
-    # save csv with image paths and annotations
+    # save pickle and csv with image paths and annotations
+    df.to_pickle(dest_dir + "/" "binarized_annotations.pkl", protocol=4)
     df.to_csv(dest_dir + "/" "binarized_annotations.csv")
 
-    # save csv with class mapping
+    # save pickle and csv with class mapping
     class_mapping = pd.Series(mlb.classes_)
+    class_mapping.to_pickle(dest_dir + "/" + "class_mapping.pkl", protocol=4)
     class_mapping.to_csv(dest_dir + "/" + "class_mapping.csv", header=False)
 
 
@@ -123,5 +125,5 @@ if __name__ == "__main__":
     	'https://nihcc.box.com/shared/static/ioqwiy20ihqwyr8pf4c24eazhh281pbu.gz'
     ]
 
-    #build_dataset(urls)
+    build_dataset(urls)
     build_binarized_annotations()
