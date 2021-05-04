@@ -52,7 +52,7 @@ def extract_pretrained_features(
         batch_size=batch_size)
     
     # extract features
-    features = model.predict(genrator, verbose=1)
+    features = model.predict(generator, verbose=1)
 
     # get corresponding labels
     labels = np.stack(df["binarized_labels"].values, axis=0)
