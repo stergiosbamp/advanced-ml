@@ -26,7 +26,7 @@ def get_train_test_dfs(
     return dfs
 
 
-def extract_pretrained_features(
+def extract_features(
     model,
     model_name,
     df,
@@ -127,4 +127,4 @@ if __name__ == "__main__":
 
     for model, model_name in zip(models, model_names):
         for df, subset_name in zip(dfs, subset_names):
-            extract_pretrained_features(model, model_name, df, subset_name)
+            extract_features(model, model_name, df, subset_name)
