@@ -7,6 +7,7 @@ from imblearn.pipeline import Pipeline
 from imblearn.metrics import geometric_mean_score
 
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import cross_validate
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import balanced_accuracy_score, make_scorer, f1_score
@@ -171,7 +172,8 @@ if __name__ == '__main__':
     CLASSIFIERS = [
         RandomForestClassifier(n_estimators=200, random_state=4),
         GradientBoostingClassifier(random_state=4),
-        KerasClassifier(build_fn=DeepModelling.init_model, input_dim=21, batch_size=64, epochs=100)
+        KerasClassifier(build_fn=DeepModelling.init_model, input_dim=21, batch_size=64, epochs=100),
+        LogisticRegression(max_iter=500, random_state=0)
     ]
 
     for upsampler in UPSAMPLERS:
