@@ -17,6 +17,6 @@ df_train, _ = get_train_test_dfs()
 
 fine_tune_pretrained_model(
     base_model,
+    df_train,
     linear_probe_model_save_path,
-    fine_tuned_model_save_path,
-    df_train)
+    fine_tuned_model_save_path)
