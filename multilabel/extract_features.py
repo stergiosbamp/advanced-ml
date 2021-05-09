@@ -3,6 +3,8 @@ import pickle
 import numpy as np
 import pandas as pd
 
+from tensorflow.keras import Model
+from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 
@@ -64,3 +66,15 @@ def extract_features(
     filename = dest_dir + "/" + model_name + "_" + subset_name + ".pkl"
     with open(filename, "wb") as f:
             pickle.dump(data, f, protocol=4)
+
+def get_fine_tuned_model_base(fine_tuned_model_file):
+    
+    # Load model from .h5 file
+    fine_tuned_model = load_model(fine_tuned_model_file)
+
+    # Get model base
+    x_in = fine_tuned_model.input
+    x_out = fine_tuned_model.layers[-2](x_in)
+    fine_tuned_model_base = Model(inputs=x_in, outputs=x_out)
+
+    return fine_tuned_model_base
