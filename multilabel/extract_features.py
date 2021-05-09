@@ -78,3 +78,23 @@ def get_fine_tuned_model_base(fine_tuned_model_file):
     fine_tuned_model_base = Model(inputs=x_in, outputs=x_out)
 
     return fine_tuned_model_base
+
+
+def load_extracted_features(train_pkl, test_pkl):
+
+    # load train set
+    with open(train_pkl, "rb") as f:
+        data_train = pickle.load(f)
+
+    # load test set
+    with open(test_pkl, "rb") as f:
+        data_test = pickle.load(f)
+
+    # get X, Y
+    X_train = data_train["X"]
+    Y_train = data_train["Y"]
+
+    X_test = data_test["X"]
+    Y_test = data_test["Y"]
+
+    return X_train, Y_train, X_test, Y_test
