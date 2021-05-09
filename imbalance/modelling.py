@@ -143,6 +143,30 @@ class BalancedModelling(Modelling):
             return True
         return False
 
+    def custom_run(self, model: Pipeline):
+        if self.model_has_run():
+            print("\tModel has already run, skipping...")
+            return
+
+        cross_validator = StratifiedKFold(n_splits=5)
+
+        for train_idx, test_idx in cross_validator.split(self.x, self.y):
+            x_train, x_test = self.x.iloc[train_idx], self.x.iloc[test_idx]
+            y_train, y_test = self.y[train_idx], self.y[test_idx]
+
+            model.fit(x_train, y_train)
+            y_pred = model.predict(x_test)
+            y_pred_prob = model.predict_proba(x_test)
+
+            self.evaluator.log_metrics(y_test, y_pred, y_pred_prob)
+
+        results = self.evaluator.get_avg_metrics()
+
+        for key, value in results.items():
+            print("\t\tAverage {} is: {}".format(key, value))
+
+        self.save_results(results, 'balance', self.model_id)
+    
     def __str__(self):
         return 'BalancedModelling({}, {})'.format(self.classifier, self.resampler)
 
@@ -197,3 +221,21 @@ if __name__ == '__main__':
             bal_model = BalancedModelling(clf, downsampler)
             print('\t{}'.format(bal_model))
             bal_model.run()
+
+    # Also run a custom experiment with SMOTE + TomekLinks for every classifier
+    for clf in CLASSIFIERS:
+        b_modelling = BalancedModelling(clf, None)
+
+        # Setup ids for logging results
+        if isinstance(clf, KerasClassifier):
+            b_modelling.model_id = "SMOTE-TomekLinks-" + "MLP"
+        else:
+            b_modelling.model_id = "SMOTE-TomekLinks-" + str(clf)
+        
+        pipe = Pipeline([
+            ('smote', SMOTE(random_state=0)),
+            ('tomek', TomekLinks()),
+            ('scaler', StandardScaler()),
+            ('classifier', clf)
+        ])
+        b_modelling.custom_run(model=pipe)
