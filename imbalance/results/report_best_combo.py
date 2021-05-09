@@ -1,5 +1,5 @@
-import pandas as pd 
-import os 
+import pandas as pd
+import os
 import json
 
 
@@ -31,7 +31,6 @@ if __name__ == '__main__':
     # Get the index of the best performing sampling + model for balanced experiments
     print("\nFor balanced dataset best performing model per metric is:\n")
     print(df_bal.idxmax())
-
 
     print("\nRow metrics are:")
     print(df_imbal, "\n")

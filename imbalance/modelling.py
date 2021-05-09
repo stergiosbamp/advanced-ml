@@ -36,10 +36,10 @@ class Modelling:
         raise NotImplemented('Implement concrete class of Modelling')
 
     def save_results(self, results, dist_type, filename):
-            dest = pathlib.Path(self.RESULTS_PATH, dist_type, filename)
-            dest = dest.with_suffix('.json')
-            with dest.open('w', encoding='utf-8') as f:
-                json.dump(results, f)
+        dest = pathlib.Path(self.RESULTS_PATH, dist_type, filename)
+        dest = dest.with_suffix('.json')
+        with dest.open('w', encoding='utf-8') as f:
+            json.dump(results, f)
 
     def model_has_run(self):
         raise NotImplemented('Implement concrete class of Modelling')
