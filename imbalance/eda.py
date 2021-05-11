@@ -1,5 +1,13 @@
 import pandas as pd
+import seaborn as sns
 import plotly.express as px
+import plotly.graph_objects as go
+import matplotlib.pyplot as plt
+
+from plotly.subplots import make_subplots
+from sklearn.preprocessing import StandardScaler
+
+from dataloader import DataLoader
 
 
 class EDA:
@@ -23,9 +31,15 @@ class EDA:
                      color_discrete_sequence=px.colors.qualitative.Safe)
         fig.show()
 
+    def box_plot(self):
+        df_unscaled = self.df
+        fig = px.box(df_unscaled, points='suspectedoutliers')
+        fig.show()
+        
 
 if __name__ == '__main__':
     df = pd.read_csv('../datasets/fetal_health.csv')
 
     eda = EDA(df=df, target='fetal_health')
-    eda.pie_chart_class_distr()
+    # eda.pie_chart_class_distr()
+    eda.box_plot()
