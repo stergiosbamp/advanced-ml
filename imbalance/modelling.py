@@ -1,8 +1,8 @@
 import pathlib
 import json
 
-from imblearn.over_sampling import SMOTE, ADASYN, BorderlineSMOTE
-from imblearn.under_sampling import RandomUnderSampler, TomekLinks
+from imblearn.over_sampling import SMOTE, ADASYN, BorderlineSMOTE, RandomOverSampler
+from imblearn.under_sampling import RandomUnderSampler, TomekLinks, NearMiss
 from imblearn.pipeline import Pipeline
 from imblearn.metrics import geometric_mean_score
 
@@ -191,8 +191,8 @@ class DeepModelling:
 
 if __name__ == '__main__':
 
-    UPSAMPLERS = [SMOTE(random_state=4), BorderlineSMOTE(random_state=4), ADASYN(random_state=4)]
-    DOWNSAMPLERS = [TomekLinks(), RandomUnderSampler(random_state=4)]
+    UPSAMPLERS = [SMOTE(random_state=4), RandomOverSampler(random_state=0), BorderlineSMOTE(random_state=4), ADASYN(random_state=4)]
+    DOWNSAMPLERS = [TomekLinks(), RandomUnderSampler(random_state=4), NearMiss(version=1)]
     CLASSIFIERS = [
         RandomForestClassifier(n_estimators=200, random_state=4),
         GradientBoostingClassifier(random_state=4),
@@ -200,29 +200,29 @@ if __name__ == '__main__':
         LogisticRegression(max_iter=500, random_state=0)
     ]
 
+    # Experiment with no balancing method
+    for clf in CLASSIFIERS:
+        imb_model = ImbalancedModelling(clf)
+        print('\n{}'.format(imb_model))
+        imb_model.run()
+
+    # Experiment with over-sampling methods
     for upsampler in UPSAMPLERS:
         print("Upsampler: {}".format(upsampler))
         for clf in CLASSIFIERS:
-            imb_model = ImbalancedModelling(clf)
-            print('\t{}'.format(imb_model))
-            imb_model.run()
-
             bal_model = BalancedModelling(clf, upsampler)
             print('\t{}'.format(bal_model))
             bal_model.run()
 
+    # Experiment with down-sampling methods
     for downsampler in DOWNSAMPLERS:
         print("Downsampler: {}".format(downsampler))
         for clf in CLASSIFIERS:
-            imb_model = ImbalancedModelling(clf)
-            print('\t{}'.format(imb_model))
-            imb_model.run()
-
             bal_model = BalancedModelling(clf, downsampler)
             print('\t{}'.format(bal_model))
             bal_model.run()
 
-    # Also run a custom experiment with SMOTE + TomekLinks for every classifier
+    # Experiment with hybrid method via SMOTE + TomekLinks for every classifier
     for clf in CLASSIFIERS:
         b_modelling = BalancedModelling(clf, None)
 
