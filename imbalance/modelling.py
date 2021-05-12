@@ -178,10 +178,15 @@ class DeepModelling:
         model = Sequential()
 
         model.add(Input(shape=(input_dim,)))
+        model.add(Dense(256, activation='relu'))
+        model.add(Dropout(0.2))
+        model.add(Dense(512, activation='relu'))
+        model.add(Dropout(0.2))
+        model.add(Dense(512, activation='relu'))
+        model.add(Dropout(0.2))
+        model.add(Dense(256, activation='relu'))
+        model.add(Dropout(0.1))
         model.add(Dense(128, activation='relu'))
-        model.add(Dropout(0.2))
-        model.add(Dense(64, activation='relu'))
-        model.add(Dropout(0.2))
         model.add(Dense(3, activation='softmax'))
 
         model.compile(optimizer='adam', metrics=[AUC()], loss='categorical_crossentropy')
