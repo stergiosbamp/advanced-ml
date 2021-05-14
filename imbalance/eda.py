@@ -31,6 +31,18 @@ class EDA:
                      color_discrete_sequence=px.colors.qualitative.Safe)
         fig.show()
 
+    def bar_chart_class_distr(self):
+        # Replace numbers with their meaning for visualization reasons
+        fetal_health_classes = self.df[self.target]
+        fetal_health_classes.replace({
+            1: 'Normal',
+            2: 'Suspect',
+            3: 'Pathological'
+        }, inplace=True)
+        counts = fetal_health_classes.value_counts()
+        fig = px.bar(data_frame=counts, color_discrete_sequence=px.colors.qualitative.Safe)
+        fig.show()
+
     def box_plot(self):
         df_unscaled = self.df
         fig = px.box(df_unscaled, points='suspectedoutliers')
@@ -42,4 +54,5 @@ if __name__ == '__main__':
 
     eda = EDA(df=df, target='fetal_health')
     # eda.pie_chart_class_distr()
-    eda.box_plot()
+    eda.bar_chart_class_distr()
+    # eda.box_plot()
