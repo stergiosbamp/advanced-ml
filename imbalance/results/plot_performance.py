@@ -7,7 +7,7 @@ from report_best_combo import populated_metrics_df
 
 
 def plot_imbalance(df):
-    fig = px.bar(df, barmode='group', color_discrete_sequence=px.colors.sequential.Aggrnyl)
+    fig = px.bar(df, barmode='group', color_discrete_sequence=px.colors.qualitative.Safe)
     fig.show()
 
 
