@@ -45,7 +45,7 @@ class EDA:
 
     def box_plot(self):
         df_unscaled = self.df
-        fig = px.box(df_unscaled, points='suspectedoutliers')
+        fig = px.box(df_unscaled)
         fig.show()
 
     def corr_heatmap(self):
@@ -58,7 +58,7 @@ if __name__ == '__main__':
     df = pd.read_csv('../datasets/fetal_health.csv')
 
     eda = EDA(df=df, target='fetal_health')
-    # eda.pie_chart_class_distr()
-    # eda.bar_chart_class_distr()
-    # eda.box_plot()
+    eda.pie_chart_class_distr()
+    eda.bar_chart_class_distr()
+    eda.box_plot()
     eda.corr_heatmap()
