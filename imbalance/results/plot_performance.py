@@ -16,11 +16,13 @@ def plot_best_combo_per_metric(df):
     values_per_metric = df.max().to_list()
     models_per_metric = df.idxmax().to_list()
 
-    fig = go.Figure()
+    labels = {}
+    for metric, model in zip(metrics, models_per_metric):
+        labels[metric] = model
 
-    for metric, value, model in zip(metrics, values_per_metric, models_per_metric):
-        fig.add_trace(go.Bar(name=model, x=[metric], y=[value], ))
-
+    fig = px.bar(x=values_per_metric, y=metrics, orientation='h', color=labels,
+                 text=values_per_metric, color_discrete_sequence=px.colors.qualitative.Safe,
+                 labels={'x': 'value', 'y': 'metric'})
     fig.show()
 
 
