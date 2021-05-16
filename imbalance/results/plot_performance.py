@@ -1,7 +1,7 @@
 import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
-
+from plotly.subplots import make_subplots
 
 from report_best_combo import populated_metrics_df
 
@@ -44,7 +44,7 @@ def plot_before_after(df_imb, df_bal, model_idx):
     for metric, value_before, value_after in zip(metrics, value_metrics_imb, value_metrics_bal):
         data[metric] = [value_before, value_after]
     display_df = pd.DataFrame(data=data, index=['Before', 'After'])
-    fig = px.line(display_df, color_discrete_sequence=px.colors.qualitative.Safe)
+    fig = px.bar(display_df, orientation='h', barmode='group', color_discrete_sequence=px.colors.qualitative.Safe)
     fig.show()
 
 
@@ -55,4 +55,4 @@ if __name__ == '__main__':
     df_bal = populated_metrics_df(directory='./balance')
     # plot_best_combo_per_metric(df_bal)
 
-    plot_before_after(df_imbal, df_bal, 'MLP')
+    plot_before_after(df_imbal, df_bal, 'Boosting')
