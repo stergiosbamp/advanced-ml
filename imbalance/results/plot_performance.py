@@ -26,25 +26,28 @@ def plot_best_combo_per_metric(df):
     fig.show()
 
 
-def plot_before_after(df_imb, df_bal, model_idx):
-    for idx in df_imb.index:
-        if model_idx in idx:
-            metrics = df_imbal.loc[idx].index.to_list()
-            value_metrics_imb = df_imbal.loc[idx].to_list()
+def plot_before_after(df_imb, df_bal, models):
+    sub_titles = [ 'Before/After for {} model'.format(model) for model in models]
+    fig = make_subplots(rows=4, cols=1, shared_xaxes=True, shared_yaxes=True, subplot_titles=sub_titles)
 
-    all_metrics_combos_bal = pd.DataFrame()
-    for idx in df_bal.index:
-        if model_idx in idx:
-            temp_metrics = df_bal.loc[idx]
-            all_metrics_combos_bal = all_metrics_combos_bal.append(temp_metrics)
+    metrics = df_imb.columns.to_list()
+    for i, model in enumerate(models):
+        for idx in df_imb.index:
+            if model in idx:
+                value_metrics_imb = df_imbal.loc[idx].to_list()
 
-    value_metrics_bal = all_metrics_combos_bal.max().to_list()
+        all_metrics_combos_bal = pd.DataFrame()
+        for idx in df_bal.index:
+            if model in idx:
+                temp_metrics = df_bal.loc[idx]
+                all_metrics_combos_bal = all_metrics_combos_bal.append(temp_metrics)
 
-    data = {}
-    for metric, value_before, value_after in zip(metrics, value_metrics_imb, value_metrics_bal):
-        data[metric] = [value_before, value_after]
-    display_df = pd.DataFrame(data=data, index=['Before', 'After'])
-    fig = px.bar(display_df, orientation='h', barmode='group', color_discrete_sequence=px.colors.qualitative.Safe)
+        value_metrics_bal = all_metrics_combos_bal.max().to_list()
+
+        fig.add_trace(go.Bar(name='Before sampling', x=metrics, y=value_metrics_imb),
+                      row=i+1, col=1)
+        fig.add_trace(go.Bar(name='After (best) sampling', x=metrics, y=value_metrics_bal),
+                      row=i+1, col=1)
     fig.show()
 
 
@@ -55,4 +58,4 @@ if __name__ == '__main__':
     df_bal = populated_metrics_df(directory='./balance')
     # plot_best_combo_per_metric(df_bal)
 
-    plot_before_after(df_imbal, df_bal, 'Boosting')
+    plot_before_after(df_imbal, df_bal, ['MLP', 'LogisticRegression', 'GradientBoosting', 'RandomForest'])
