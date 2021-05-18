@@ -29,7 +29,7 @@ def plot_best_combo_per_metric(df):
 
 def plot_before_after(df_imb, df_bal, models):
     sub_titles = [ 'Before/After for {} model'.format(model) for model in models]
-    fig = make_subplots(rows=4, cols=1, shared_xaxes=True, shared_yaxes=True, subplot_titles=sub_titles)
+    fig = make_subplots(rows=4, cols=1, subplot_titles=sub_titles)
 
     metrics = df_imb.columns.to_list()
     for i, model in enumerate(models):
@@ -54,9 +54,9 @@ def plot_before_after(df_imb, df_bal, models):
 
 if __name__ == '__main__':
     df_imbal = populated_metrics_df(directory='./imbalance')
-    # plot_imbalance(df_imbal)
+    plot_imbalance(df_imbal)
 
     df_bal = populated_metrics_df(directory='./balance')
     plot_best_combo_per_metric(df_bal)
 
-    # plot_before_after(df_imbal, df_bal, ['MLP', 'LogisticRegression', 'GradientBoosting', 'RandomForest'])
+    plot_before_after(df_imbal, df_bal, ['MLP', 'LogisticRegression', 'GradientBoosting', 'RandomForest'])
