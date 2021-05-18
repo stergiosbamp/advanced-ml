@@ -1,6 +1,8 @@
+import json
 import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
+import plotly.figure_factory as ff
 from plotly.subplots import make_subplots
 
 from report_best_combo import populated_metrics_df
@@ -28,7 +30,7 @@ def plot_best_combo_per_metric(df):
 
 
 def plot_before_after(df_imb, df_bal, models):
-    sub_titles = [ 'Before/After for {} model'.format(model) for model in models]
+    sub_titles = ['Before/After for {} model'.format(model) for model in models]
     fig = make_subplots(rows=4, cols=1, subplot_titles=sub_titles)
 
     metrics = df_imb.columns.to_list()
@@ -46,9 +48,17 @@ def plot_before_after(df_imb, df_bal, models):
         value_metrics_bal = all_metrics_combos_bal.max().to_list()
 
         fig.add_trace(go.Bar(name='Before sampling', x=metrics, y=value_metrics_imb),
-                      row=i+1, col=1)
+                      row=i + 1, col=1)
         fig.add_trace(go.Bar(name='After (best) sampling', x=metrics, y=value_metrics_bal),
-                      row=i+1, col=1)
+                      row=i + 1, col=1)
+    fig.show()
+
+
+def plot_confusion_matrix(cf_path):
+    cf = json.load(open(cf_path, 'rb'))
+    x_labels = ['Predicted Normal', 'Predicted Suspect', 'Predicted Pathological']
+    y_labels = ['True Normal', 'True Suspect', 'True Pathological']
+    fig = ff.create_annotated_heatmap(cf, x=x_labels, y=y_labels, annotation_text=cf, colorscale=px.colors.sequential.Aggrnyl)
     fig.show()
 
 
@@ -60,3 +70,6 @@ if __name__ == '__main__':
     plot_best_combo_per_metric(df_bal)
 
     plot_before_after(df_imbal, df_bal, ['MLP', 'LogisticRegression', 'GradientBoosting', 'RandomForest'])
+
+    plot_confusion_matrix('./confusion-matrices/MLP.json')
+    plot_confusion_matrix('./confusion-matrices/SMOTE(random_state=4)-GradientBoostingClassifier(random_state=4).json')
