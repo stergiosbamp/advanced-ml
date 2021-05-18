@@ -23,7 +23,7 @@ def plot_best_combo_per_metric(df):
 
     fig = px.bar(x=values_per_metric, y=metrics, orientation='h', color=labels,
                  text=values_per_metric, color_discrete_sequence=px.colors.qualitative.Safe,
-                 labels={'x': 'value', 'y': 'metric'})
+                 labels={'x': 'value', 'y': 'metric'}, height=800, title='Best model and sampling technique per evaluation metric')
     fig.show()
 
 
@@ -54,9 +54,9 @@ def plot_before_after(df_imb, df_bal, models):
 
 if __name__ == '__main__':
     df_imbal = populated_metrics_df(directory='./imbalance')
-    plot_imbalance(df_imbal)
+    # plot_imbalance(df_imbal)
 
     df_bal = populated_metrics_df(directory='./balance')
     plot_best_combo_per_metric(df_bal)
 
-    plot_before_after(df_imbal, df_bal, ['MLP', 'LogisticRegression', 'GradientBoosting', 'RandomForest'])
+    # plot_before_after(df_imbal, df_bal, ['MLP', 'LogisticRegression', 'GradientBoosting', 'RandomForest'])
