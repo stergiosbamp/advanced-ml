@@ -7,7 +7,8 @@ from report_best_combo import populated_metrics_df
 
 
 def plot_imbalance(df):
-    fig = px.bar(df, barmode='group', color_discrete_sequence=px.colors.qualitative.Safe)
+    fig = px.bar(df, barmode='group', color_discrete_sequence=px.colors.qualitative.Safe, title='Performance without handling imbalance',
+                 width=1000, height=1000)
     fig.show()
 
 
@@ -53,9 +54,9 @@ def plot_before_after(df_imb, df_bal, models):
 
 if __name__ == '__main__':
     df_imbal = populated_metrics_df(directory='./imbalance')
-    # plot_imbalance(df_imbal)
+    plot_imbalance(df_imbal)
 
     df_bal = populated_metrics_df(directory='./balance')
-    # plot_best_combo_per_metric(df_bal)
+    plot_best_combo_per_metric(df_bal)
 
     plot_before_after(df_imbal, df_bal, ['MLP', 'LogisticRegression', 'GradientBoosting', 'RandomForest'])
