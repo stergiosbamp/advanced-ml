@@ -1,5 +1,6 @@
 import pathlib
 import json
+import tensorflow as tf
 
 from imblearn.over_sampling import SMOTE, ADASYN, BorderlineSMOTE, RandomOverSampler
 from imblearn.under_sampling import RandomUnderSampler, TomekLinks, NearMiss
@@ -77,11 +78,10 @@ class ImbalancedModelling(Modelling):
             self.evaluator.log_metrics(y_test, y_pred, y_pred_prob)
 
         results = self.evaluator.get_avg_metrics()
-
-        for key, value in results.items():
-            print("\t\tAverage {} is: {}".format(key, value))
+        avg_cf = self.evaluator.get_avg_confusion_matrix()
 
         self.save_results(results, 'imbalance', self.model_id)
+        self.save_results(avg_cf, 'confusion-matrices', self.model_id)
 
     def model_has_run(self):
         dest = pathlib.Path(self.RESULTS_PATH, 'imbalance', self.model_id)
@@ -130,11 +130,10 @@ class BalancedModelling(Modelling):
             self.evaluator.log_metrics(y_test, y_pred, y_pred_prob)
 
         results = self.evaluator.get_avg_metrics()
-
-        for key, value in results.items():
-            print("\t\tAverage {} is: {}".format(key, value))
+        avg_cf = self.evaluator.get_avg_confusion_matrix()
 
         self.save_results(results, 'balance', self.model_id)
+        self.save_results(avg_cf, 'confusion-matrices', self.model_id)
 
     def model_has_run(self):
         dest = pathlib.Path(self.RESULTS_PATH, 'balance', self.model_id)
@@ -161,11 +160,10 @@ class BalancedModelling(Modelling):
             self.evaluator.log_metrics(y_test, y_pred, y_pred_prob)
 
         results = self.evaluator.get_avg_metrics()
-
-        for key, value in results.items():
-            print("\t\tAverage {} is: {}".format(key, value))
+        avg_cf = self.evaluator.get_avg_confusion_matrix()
 
         self.save_results(results, 'balance', self.model_id)
+        self.save_results(avg_cf, 'confusion-matrices', self.model_id)
     
     def __str__(self):
         return 'BalancedModelling({}, {})'.format(self.classifier, self.resampler)
@@ -175,6 +173,8 @@ class DeepModelling:
 
     @staticmethod
     def init_model(input_dim=None):
+        tf.random.set_seed(0)
+
         model = Sequential()
 
         model.add(Input(shape=(input_dim,)))
@@ -201,7 +201,7 @@ if __name__ == '__main__':
     CLASSIFIERS = [
         RandomForestClassifier(n_estimators=200, random_state=4),
         GradientBoostingClassifier(random_state=4),
-        KerasClassifier(build_fn=DeepModelling.init_model, input_dim=21, batch_size=64, epochs=100),
+        KerasClassifier(build_fn=DeepModelling.init_model, input_dim=21, batch_size=64, epochs=50),
         LogisticRegression(max_iter=500, random_state=0)
     ]
 
