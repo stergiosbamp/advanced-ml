@@ -25,7 +25,7 @@ class EDA:
             3: 'Pathological'
         })
 
-        title = 'Class distribution of fetal Cardiotocograms'
+        title = 'Class distribution (percentage) of fetal Cardiotocograms'
 
         fig = px.pie(fetal_health_classes, names=self.target, hole=0.2, title=title, width=650, height=650,
                      color_discrete_sequence=px.colors.qualitative.Safe)
@@ -40,7 +40,8 @@ class EDA:
             3: 'Pathological'
         })
         counts = fetal_health_classes.value_counts()
-        fig = px.bar(data_frame=counts, color_discrete_sequence=px.colors.qualitative.Safe, width=650, height=650)
+        fig = px.bar(data_frame=counts, color_discrete_sequence=px.colors.qualitative.Safe, title='Class distribution (number of eaxmples) of fetal Cardiotocograms',
+                     width=650, height=650)
         fig.show()
 
     def box_plot(self):
