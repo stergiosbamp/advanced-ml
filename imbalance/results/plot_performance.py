@@ -1,3 +1,4 @@
+import os
 import json
 import pandas as pd
 import plotly.graph_objects as go
@@ -39,7 +40,7 @@ def plot_before_after(df_imb, df_bal, models):
     for i, model in enumerate(models):
         for idx in df_imb.index:
             if model in idx:
-                value_metrics_imb = df_imbal.loc[idx].to_list()
+                value_metrics_imb = df_imb.loc[idx].to_list()
 
         all_metrics_combos_bal = pd.DataFrame()
         for idx in df_bal.index:
@@ -56,14 +57,14 @@ def plot_before_after(df_imb, df_bal, models):
     fig.show()
 
 
-def plot_confusion_matrix(cf_path):
+def plot_confusion_matrix(cf_path, title):
     cf = json.load(open(cf_path, 'rb'))
     x_labels = ['Predicted Normal', 'Predicted Suspect', 'Predicted Pathological']
     y_labels = ['True Normal', 'True Suspect', 'True Pathological']
     fig = ff.create_annotated_heatmap(cf, x=x_labels, y=y_labels, annotation_text=cf,
                                       colorscale=px.colors.sequential.Aggrnyl)
 
-    fig.update_layout(width=650, height=650)
+    fig.update_layout(title=title, width=650, height=650)
     fig.show()
 
 
@@ -77,9 +78,11 @@ if __name__ == '__main__':
     plot_before_after(df_imbal, df_bal, ['MLP', 'LogisticRegression', 'GradientBoosting', 'RandomForest'])
 
     # Confusion matrix before/after GD
-    plot_confusion_matrix('./confusion-matrices/GradientBoostingClassifier(random_state=4).json')
-    plot_confusion_matrix('./confusion-matrices/SMOTE(random_state=4)-GradientBoostingClassifier(random_state=4).json')
+    plot_confusion_matrix('./confusion-matrices/GradientBoostingClassifier(random_state=4).json', 'Gradient Boosting')
+    plot_confusion_matrix('./confusion-matrices/SMOTE(random_state=4)-GradientBoostingClassifier(random_state=4).json',
+                          'SMOTE - Gradient Boosting')
 
     # Confusion matrix before/after MLP
-    plot_confusion_matrix('./confusion-matrices/MLP.json')
-    plot_confusion_matrix('./confusion-matrices/RandomUnderSampler(random_state=4)-MLP.json')
+    plot_confusion_matrix('./confusion-matrices/MLP.json', 'MLP')
+    plot_confusion_matrix('./confusion-matrices/RandomUnderSampler(random_state=4)-MLP.json',
+                          'Random under sampling - MLP')
