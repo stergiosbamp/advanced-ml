@@ -9,7 +9,8 @@ from report_best_combo import populated_metrics_df
 
 
 def plot_imbalance(df):
-    fig = px.bar(df, barmode='group', color_discrete_sequence=px.colors.qualitative.Safe, title='Performance without handling imbalance',
+    fig = px.bar(df, barmode='group', color_discrete_sequence=px.colors.qualitative.Safe,
+                 title='Performance without handling imbalance',
                  width=1000, height=1000)
     fig.show()
 
@@ -25,7 +26,8 @@ def plot_best_combo_per_metric(df):
 
     fig = px.bar(x=values_per_metric, y=metrics, orientation='h', color=labels,
                  text=values_per_metric, color_discrete_sequence=px.colors.qualitative.Safe,
-                 labels={'x': 'value', 'y': 'metric'}, height=800, title='Best model and sampling technique per evaluation metric')
+                 labels={'x': 'value', 'y': 'metric'}, height=800,
+                 title='Best model and sampling technique per evaluation metric')
     fig.show()
 
 
@@ -58,7 +60,10 @@ def plot_confusion_matrix(cf_path):
     cf = json.load(open(cf_path, 'rb'))
     x_labels = ['Predicted Normal', 'Predicted Suspect', 'Predicted Pathological']
     y_labels = ['True Normal', 'True Suspect', 'True Pathological']
-    fig = ff.create_annotated_heatmap(cf, x=x_labels, y=y_labels, annotation_text=cf, colorscale=px.colors.sequential.Aggrnyl)
+    fig = ff.create_annotated_heatmap(cf, x=x_labels, y=y_labels, annotation_text=cf,
+                                      colorscale=px.colors.sequential.Aggrnyl)
+
+    fig.update_layout(width=650, height=650)
     fig.show()
 
 
@@ -71,5 +76,10 @@ if __name__ == '__main__':
 
     plot_before_after(df_imbal, df_bal, ['MLP', 'LogisticRegression', 'GradientBoosting', 'RandomForest'])
 
-    plot_confusion_matrix('./confusion-matrices/MLP.json')
+    # Confusion matrix before/after GD
+    plot_confusion_matrix('./confusion-matrices/GradientBoostingClassifier(random_state=4).json')
     plot_confusion_matrix('./confusion-matrices/SMOTE(random_state=4)-GradientBoostingClassifier(random_state=4).json')
+
+    # Confusion matrix before/after MLP
+    plot_confusion_matrix('./confusion-matrices/MLP.json')
+    plot_confusion_matrix('./confusion-matrices/RandomUnderSampler(random_state=4)-MLP.json')
