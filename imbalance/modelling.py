@@ -53,7 +53,7 @@ class Modelling:
         results = self.evaluator.get_avg_metrics()
         avg_cf = self.evaluator.get_avg_confusion_matrix()
 
-        self.save_results(results, 'imbalance', self.model_id)
+        self.save_results(results, folder, self.model_id)
         self.save_results(avg_cf, 'confusion-matrices', self.model_id)
 
     def save_results(self, results, dist_type, filename):
@@ -88,7 +88,7 @@ class ImbalancedModelling(Modelling):
             ('scaler', StandardScaler()),
             ('classifier', self.classifier)
         ])
-        return super().run(model=model, folder=self.DEST_FOLDER)
+        self.run(model=model, folder=self.DEST_FOLDER)
 
     def __str__(self):
         return 'ImbalancedModelling({})'.format(self.classifier)
@@ -111,7 +111,7 @@ class BalancedModelling(Modelling):
             ('scaler', StandardScaler()),
             ('classifier', self.classifier)
         ])
-        return super().run(model=model, folder=self.DEST_FOLDER)
+        self.run(model=model, folder=self.DEST_FOLDER)
 
     def __str__(self):
         return 'BalancedModelling({}, {})'.format(self.classifier, self.resampler)
