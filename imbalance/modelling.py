@@ -33,8 +33,28 @@ class Modelling:
         self.classifier = classifier
         self.evaluator = Evaluator()
 
-    def run(self):
-        raise NotImplemented('Implement concrete class of Modelling')
+    def run(self, model: Pipeline, folder: str):
+        if self.model_has_run(folder):
+            print("\tModel has already run, skipping...")
+            return
+
+        cross_validator = StratifiedKFold(n_splits=5)
+
+        for train_idx, test_idx in cross_validator.split(self.x, self.y):
+            x_train, x_test = self.x.iloc[train_idx], self.x.iloc[test_idx]
+            y_train, y_test = self.y[train_idx], self.y[test_idx]
+
+            model.fit(x_train, y_train)
+            y_pred = model.predict(x_test)
+            y_pred_prob = model.predict_proba(x_test)
+
+            self.evaluator.log_metrics(y_test, y_pred, y_pred_prob)
+
+        results = self.evaluator.get_avg_metrics()
+        avg_cf = self.evaluator.get_avg_confusion_matrix()
+
+        self.save_results(results, folder, self.model_id)
+        self.save_results(avg_cf, 'confusion-matrices', self.model_id)
 
     def save_results(self, results, dist_type, filename):
         dest = pathlib.Path(self.RESULTS_PATH, dist_type, filename)
@@ -42,11 +62,19 @@ class Modelling:
         with dest.open('w', encoding='utf-8') as f:
             json.dump(results, f)
 
-    def model_has_run(self):
-        raise NotImplemented('Implement concrete class of Modelling')
+    def run_model(self):
+        raise NotImplemented("Concrete class need to implement the method of how to run the model.")
+    
+    def model_has_run(self, folder):
+        dest = pathlib.Path(self.RESULTS_PATH, folder, self.model_id)
+        dest = dest.with_suffix('.json')
+        if dest.exists():
+            return True
+        return False
 
 
 class ImbalancedModelling(Modelling):
+    DEST_FOLDER = 'imbalance'
 
     def __init__(self, classifier):
         super().__init__(classifier)
@@ -54,48 +82,21 @@ class ImbalancedModelling(Modelling):
             self.model_id = 'MLP'
         else:
             self.model_id = str(self.classifier)
-
-    def run(self):
+        
+    def run_model(self):
         model = Pipeline([
             ('scaler', StandardScaler()),
             ('classifier', self.classifier)
         ])
-
-        if self.model_has_run():
-            print("\tModel has already run, skipping...")
-            return
-
-        cross_validator = StratifiedKFold(n_splits=5)
-
-        for train_idx, test_idx in cross_validator.split(self.x, self.y):
-            x_train, x_test = self.x.iloc[train_idx], self.x.iloc[test_idx]
-            y_train, y_test = self.y[train_idx], self.y[test_idx]
-
-            model.fit(x_train, y_train)
-            y_pred = model.predict(x_test)
-            y_pred_prob = model.predict_proba(x_test)
-
-            self.evaluator.log_metrics(y_test, y_pred, y_pred_prob)
-
-        results = self.evaluator.get_avg_metrics()
-        avg_cf = self.evaluator.get_avg_confusion_matrix()
-
-        self.save_results(results, 'imbalance', self.model_id)
-        self.save_results(avg_cf, 'confusion-matrices', self.model_id)
-
-    def model_has_run(self):
-        dest = pathlib.Path(self.RESULTS_PATH, 'imbalance', self.model_id)
-        dest = dest.with_suffix('.json')
-        if dest.exists():
-            return True
-        return False
+        self.run(model=model, folder=self.DEST_FOLDER)
 
     def __str__(self):
         return 'ImbalancedModelling({})'.format(self.classifier)
 
 
 class BalancedModelling(Modelling):
-
+    DEST_FOLDER = 'balance'
+    
     def __init__(self, classifier, resampler):
         super().__init__(classifier)
         self.resampler = resampler
@@ -103,68 +104,15 @@ class BalancedModelling(Modelling):
             self.model_id = str(self.resampler) + "-" + 'MLP'
         else:
             self.model_id = str(self.resampler) + "-" + str(self.classifier)
-
-    def run(self):
-        # Note the Pipeline from "imblearn" to avoid data leakage!
-
+        
+    def run_model(self):
         model = Pipeline([
             ('resampler', self.resampler),
             ('scaler', StandardScaler()),
             ('classifier', self.classifier)
         ])
+        self.run(model=model, folder=self.DEST_FOLDER)
 
-        if self.model_has_run():
-            print("\tModel has already run, skipping...")
-            return
-
-        cross_validator = StratifiedKFold(n_splits=5)
-
-        for train_idx, test_idx in cross_validator.split(self.x, self.y):
-            x_train, x_test = self.x.iloc[train_idx], self.x.iloc[test_idx]
-            y_train, y_test = self.y[train_idx], self.y[test_idx]
-
-            model.fit(x_train, y_train)
-            y_pred = model.predict(x_test)
-            y_pred_prob = model.predict_proba(x_test)
-
-            self.evaluator.log_metrics(y_test, y_pred, y_pred_prob)
-
-        results = self.evaluator.get_avg_metrics()
-        avg_cf = self.evaluator.get_avg_confusion_matrix()
-
-        self.save_results(results, 'balance', self.model_id)
-        self.save_results(avg_cf, 'confusion-matrices', self.model_id)
-
-    def model_has_run(self):
-        dest = pathlib.Path(self.RESULTS_PATH, 'balance', self.model_id)
-        dest = dest.with_suffix('.json')
-        if dest.exists():
-            return True
-        return False
-
-    def custom_run(self, model: Pipeline):
-        if self.model_has_run():
-            print("\tModel has already run, skipping...")
-            return
-
-        cross_validator = StratifiedKFold(n_splits=5)
-
-        for train_idx, test_idx in cross_validator.split(self.x, self.y):
-            x_train, x_test = self.x.iloc[train_idx], self.x.iloc[test_idx]
-            y_train, y_test = self.y[train_idx], self.y[test_idx]
-
-            model.fit(x_train, y_train)
-            y_pred = model.predict(x_test)
-            y_pred_prob = model.predict_proba(x_test)
-
-            self.evaluator.log_metrics(y_test, y_pred, y_pred_prob)
-
-        results = self.evaluator.get_avg_metrics()
-        avg_cf = self.evaluator.get_avg_confusion_matrix()
-
-        self.save_results(results, 'balance', self.model_id)
-        self.save_results(avg_cf, 'confusion-matrices', self.model_id)
-    
     def __str__(self):
         return 'BalancedModelling({}, {})'.format(self.classifier, self.resampler)
 
@@ -204,7 +152,7 @@ if __name__ == '__main__':
     for clf in CLASSIFIERS:
         imb_model = ImbalancedModelling(clf)
         print('\n{}'.format(imb_model))
-        imb_model.run()
+        imb_model.run_model()
 
     # Experiment with over-sampling methods
     for upsampler in UPSAMPLERS:
@@ -212,7 +160,7 @@ if __name__ == '__main__':
         for clf in CLASSIFIERS:
             bal_model = BalancedModelling(clf, upsampler)
             print('\t{}'.format(bal_model))
-            bal_model.run()
+            bal_model.run_model()
 
     # Experiment with down-sampling methods
     for downsampler in DOWNSAMPLERS:
@@ -220,7 +168,7 @@ if __name__ == '__main__':
         for clf in CLASSIFIERS:
             bal_model = BalancedModelling(clf, downsampler)
             print('\t{}'.format(bal_model))
-            bal_model.run()
+            bal_model.run_model()
 
     # Experiment with hybrid method via SMOTE + TomekLinks for every classifier
     for clf in CLASSIFIERS:
@@ -238,4 +186,4 @@ if __name__ == '__main__':
             ('scaler', StandardScaler()),
             ('classifier', clf)
         ])
-        b_modelling.custom_run(model=pipe)
+        b_modelling.run(model=pipe, folder='balance')
