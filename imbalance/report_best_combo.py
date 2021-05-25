@@ -21,8 +21,8 @@ def populated_metrics_df(directory):
 
 
 if __name__ == '__main__':
-    df_imbal = populated_metrics_df(directory='./imbalance')
-    df_bal = populated_metrics_df(directory='./balance')
+    df_imbal = populated_metrics_df(directory='./results/imbalance')
+    df_bal = populated_metrics_df(directory='./results/balance')
 
     # Get the index of the best performing model for imbalanced experiments
     print("\nFor imbalanced dataset best performing model per metric is:\n")
