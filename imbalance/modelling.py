@@ -33,8 +33,8 @@ class Modelling:
         self.classifier = classifier
         self.evaluator = Evaluator()
 
-    def run(self, model: Pipeline, folder: str):
-        if self.model_has_run(folder):
+    def run(self, model: Pipeline, folder: str, model_id: str):
+        if self.model_has_run(folder, model_id):
             print("\tModel has already run, skipping...")
             return
 
@@ -53,8 +53,8 @@ class Modelling:
         results = self.evaluator.get_avg_metrics()
         avg_cf = self.evaluator.get_avg_confusion_matrix()
 
-        self.save_results(results, folder, self.model_id)
-        self.save_results(avg_cf, 'confusion-matrices', self.model_id)
+        self.save_results(results, folder, model_id)
+        self.save_results(avg_cf, 'confusion-matrices', model_id)
 
     def save_results(self, results, dist_type, filename):
         dest = pathlib.Path(self.RESULTS_PATH, dist_type, filename)
@@ -65,8 +65,8 @@ class Modelling:
     def run_model(self):
         raise NotImplemented("Concrete class need to implement the method of how to run the model.")
     
-    def model_has_run(self, folder):
-        dest = pathlib.Path(self.RESULTS_PATH, folder, self.model_id)
+    def model_has_run(self, folder, model_id):
+        dest = pathlib.Path(self.RESULTS_PATH, folder, model_id)
         dest = dest.with_suffix('.json')
         if dest.exists():
             return True
@@ -88,7 +88,7 @@ class ImbalancedModelling(Modelling):
             ('scaler', StandardScaler()),
             ('classifier', self.classifier)
         ])
-        self.run(model=model, folder=self.DEST_FOLDER)
+        self.run(model=model, folder=self.DEST_FOLDER, model_id=self.model_id)
 
     def __str__(self):
         return 'ImbalancedModelling({})'.format(self.classifier)
@@ -111,7 +111,7 @@ class BalancedModelling(Modelling):
             ('scaler', StandardScaler()),
             ('classifier', self.classifier)
         ])
-        self.run(model=model, folder=self.DEST_FOLDER)
+        self.run(model=model, folder=self.DEST_FOLDER, model_id=self.model_id)
 
     def __str__(self):
         return 'BalancedModelling({}, {})'.format(self.classifier, self.resampler)
@@ -186,4 +186,4 @@ if __name__ == '__main__':
             ('scaler', StandardScaler()),
             ('classifier', clf)
         ])
-        b_modelling.run(model=pipe, folder='balance')
+        b_modelling.run(model=pipe, folder='balance', model_id=b_modelling.model_id)
