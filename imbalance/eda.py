@@ -40,7 +40,9 @@ class EDA:
             3: 'Pathological'
         })
         counts = fetal_health_classes.value_counts()
-        fig = px.bar(data_frame=counts, color_discrete_sequence=px.colors.qualitative.Safe, title='Class distribution (number of eaxmples) of fetal Cardiotocograms',
+        fig = px.bar(data_frame=counts, color_discrete_sequence=px.colors.qualitative.Safe,
+                     title='Class distribution (number of examples) of fetal Cardiotocograms',
+                     labels={'index': 'Classes', 'value': 'Examples'},
                      width=650, height=650)
         fig.show()
 
@@ -59,7 +61,7 @@ if __name__ == '__main__':
     df = pd.read_csv('../datasets/fetal_health.csv')
 
     eda = EDA(df=df, target='fetal_health')
-    eda.pie_chart_class_distr()
+    # eda.pie_chart_class_distr()
     eda.bar_chart_class_distr()
-    eda.box_plot()
-    eda.corr_heatmap()
+    # eda.box_plot()
+    # eda.corr_heatmap()
