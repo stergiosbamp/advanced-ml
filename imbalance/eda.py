@@ -53,7 +53,7 @@ class EDA:
 
     def corr_heatmap(self):
         corr = df.corr()
-        fig = px.imshow(img=corr, color_continuous_scale=px.colors.sequential.YlGnBu)
+        fig = px.imshow(img=corr, color_continuous_scale=px.colors.sequential.YlGnBu, width=700, height=700)
         fig.show()
 
 
@@ -61,7 +61,7 @@ if __name__ == '__main__':
     df = pd.read_csv('../datasets/fetal_health.csv')
 
     eda = EDA(df=df, target='fetal_health')
-    # eda.pie_chart_class_distr()
+    eda.pie_chart_class_distr()
     eda.bar_chart_class_distr()
-    # eda.box_plot()
-    # eda.corr_heatmap()
+    eda.box_plot()
+    eda.corr_heatmap()
