@@ -1,8 +1,6 @@
 from extract_features import extract_features, get_fine_tuned_model_base, get_train_test_dfs
 
 
-
-
 fine_tuned_xception_base = get_fine_tuned_model_base(
     "data/xception_fine_tuned.h5")
 
