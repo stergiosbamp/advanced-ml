@@ -19,4 +19,5 @@ fine_tune_pretrained_model(
     base_model,
     df_train,
     linear_probe_model_save_path,
-    fine_tuned_model_save_path)
+    fine_tuned_model_save_path,
+    loss="binary_crossentropy")

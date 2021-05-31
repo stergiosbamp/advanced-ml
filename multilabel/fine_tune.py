@@ -10,7 +10,8 @@ def fine_tune_pretrained_model(
     base_model,
     df_train,
     linear_probe_model_save_path,
-    fine_tuned_model_save_filepath):
+    fine_tuned_model_save_filepath,
+    loss):
 
     # linear probe
     linear_probe = Dense(14, activation="sigmoid")
@@ -53,7 +54,7 @@ def fine_tune_pretrained_model(
     # compile model
     model.compile(
         optimizer=Adam(learning_rate=0.001),
-        loss="binary_crossentropy",
+        loss=loss,
         metrics=[AUC(multi_label=True), Precision(), Recall()])
 
     # train model
@@ -75,7 +76,7 @@ def fine_tune_pretrained_model(
     # compile model
     model.compile(
         optimizer=Adam(learning_rate=0.0001),
-        loss="binary_crossentropy",
+        loss=loss,
         metrics=[AUC(multi_label=True), Precision(), Recall()])
 
     # train model
