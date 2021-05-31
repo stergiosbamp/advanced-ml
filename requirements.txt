@@ -4,3 +4,6 @@ pandas==1.2.3
 imbalanced-learn==0.8.0
 matplotlib==3.4.1
 plotly==4.14.3
+arff==0.9
+requests==2.25.1
+tensorflow==2.4.1
