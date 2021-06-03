@@ -12,8 +12,8 @@ base_model = Xception(
         input_shape=(299,299,3),
         pooling="max")
 
-linear_probe_model_save_path = "data/xception_linear_probe.h5"
-fine_tuned_model_save_path = "data/xception_fine_tuned.h5"
+linear_probe_model_save_path = "data/xception_bpmll_linear_probe.h5"
+fine_tuned_model_save_path = "data/xception_bpmll_fine_tuned.h5"
 
 df_train, _ = get_train_test_dfs()
 
