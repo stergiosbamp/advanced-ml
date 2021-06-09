@@ -139,8 +139,8 @@ class DeepModelling:
 
 if __name__ == '__main__':
 
-    UPSAMPLERS = [SMOTE(random_state=4), RandomOverSampler(random_state=0), BorderlineSMOTE(random_state=4), ADASYN(random_state=4)]
-    DOWNSAMPLERS = [TomekLinks(), RandomUnderSampler(random_state=4), NearMiss(version=1)]
+    OVERSAMPLERS = [SMOTE(random_state=4), RandomOverSampler(random_state=0), BorderlineSMOTE(random_state=4), ADASYN(random_state=4)]
+    UNDERSAMPLERS = [TomekLinks(), RandomUnderSampler(random_state=4), NearMiss(version=1)]
     CLASSIFIERS = [
         RandomForestClassifier(n_estimators=200, random_state=4),
         GradientBoostingClassifier(random_state=4),
@@ -154,19 +154,19 @@ if __name__ == '__main__':
         print('\n{}'.format(imb_model))
         imb_model.run_model()
 
-    # Experiment with over-sampling methods
-    for upsampler in UPSAMPLERS:
-        print("Upsampler: {}".format(upsampler))
+    # Experiment with oversampling methods
+    for oversampler in OVERSAMPLERS:
+        print("Upsampler: {}".format(oversampler))
         for clf in CLASSIFIERS:
-            bal_model = BalancedModelling(clf, upsampler)
+            bal_model = BalancedModelling(clf, oversampler)
             print('\t{}'.format(bal_model))
             bal_model.run_model()
 
-    # Experiment with down-sampling methods
-    for downsampler in DOWNSAMPLERS:
-        print("Downsampler: {}".format(downsampler))
+    # Experiment with undersampling methods
+    for undersampler in UNDERSAMPLERS:
+        print("Downsampler: {}".format(undersampler))
         for clf in CLASSIFIERS:
-            bal_model = BalancedModelling(clf, downsampler)
+            bal_model = BalancedModelling(clf, undersampler)
             print('\t{}'.format(bal_model))
             bal_model.run_model()
 
