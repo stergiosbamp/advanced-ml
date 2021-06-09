@@ -131,19 +131,19 @@ def plot_confusion_matrix(cf_path, title):
 
 if __name__ == '__main__':
     df_imbal = populated_metrics_df(directory='./results/imbalance')
-    # plot_imbalance(df_imbal)
+    plot_imbalance(df_imbal)
 
     df_bal = populated_metrics_df(directory='./results/balance')
     plot_best_combo_per_metric(df_bal)
 
-    # plot_before_after(df_imbal, df_bal, ['MLP', 'LogisticRegression', 'GradientBoosting', 'RandomForest'])
+    plot_before_after(df_imbal, df_bal, ['MLP', 'LogisticRegression', 'GradientBoosting', 'RandomForest'])
 
-    # # Confusion matrix before/after GD
-    # plot_confusion_matrix('./results/confusion-matrices/GradientBoostingClassifier(random_state=4).json', 'Gradient Boosting')
-    # plot_confusion_matrix('./results/confusion-matrices/SMOTE(random_state=4)-GradientBoostingClassifier(random_state=4).json',
-    #                       'SMOTE - Gradient Boosting')
-    #
-    # # Confusion matrix before/after MLP
-    # plot_confusion_matrix('./results/confusion-matrices/MLP.json', 'MLP')
-    # plot_confusion_matrix('./results/confusion-matrices/RandomUnderSampler(random_state=4)-MLP.json',
-    #                       'Random undersampling - MLP')
+    # Confusion matrix before/after GD
+    plot_confusion_matrix('./results/confusion-matrices/GradientBoostingClassifier(random_state=4).json', 'Gradient Boosting')
+    plot_confusion_matrix('./results/confusion-matrices/SMOTE(random_state=4)-GradientBoostingClassifier(random_state=4).json',
+                          'SMOTE - Gradient Boosting')
+
+    # Confusion matrix before/after MLP
+    plot_confusion_matrix('./results/confusion-matrices/MLP.json', 'MLP')
+    plot_confusion_matrix('./results/confusion-matrices/RandomUnderSampler(random_state=4)-MLP.json',
+                          'Random undersampling - MLP')
