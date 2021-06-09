@@ -1,4 +1,5 @@
 import os
+import re
 import json
 import pandas as pd
 import plotly.graph_objects as go
@@ -9,7 +10,48 @@ from plotly.subplots import make_subplots
 from report_best_combo import populated_metrics_df
 
 
+CLF_RENAMER = [
+    (r'(.+)?GradientBoosting', "Gradient Boosting"),
+    (r'(.+)?MLP', "MLP"),
+    (r'(.+)?LogisticRegression', "Logistic Regression"),
+    (r'(.+)?RandomForest', "Random Forest")
+]
+
+RESAMPLER_RENAMER = [
+    (r'(.+)?ADASYN', "ADASYN"),
+    (r'(.+)?BorderlineSMOTE', "Borderline SMOTE"),
+    (r'(.+)?NearMiss', "Nearmiss (v1)"),
+    (r'(.+)?RandomOverSampler', "Random over-sampling"),
+    (r'(.+)?RandomUnderSampler', "Random under-sampling"),
+    (r'(.+)?SMOTE', "SMOTE"),
+    (r'(.+)?SMOTE-TomekLinks', "SMOTE - Tomek links"),
+    (r'(.+)?TomekLinks', "Tomek links"),
+]
+
+
+def metrics_renamer():
+    return {
+        'avg_auc_roc': 'ROC AUC (avg)',
+        'avg_b_acc': 'Balanced accuracy (avg)',
+        'avg_g_mean': 'Geometric mean (avg)',
+        'avg_f1_score': 'F1-score (avg)'
+    }
+
+
 def plot_imbalance(df):
+    # Rename classifiers from json files
+    old_indices = df.index.to_list()
+    new_indices = []
+
+    for ind in old_indices:
+        for renamer in CLF_RENAMER:
+            regex, new_name = renamer
+            if re.match(regex, ind):
+                new_indices.append(new_name)
+    df.index = new_indices
+
+    # Rename metrics
+    df.rename(columns=metrics_renamer(), inplace=True)
     fig = px.bar(df, barmode='group', color_discrete_sequence=px.colors.qualitative.Safe,
                  title='Performance without handling imbalance',
                  width=1000, height=1000)
@@ -25,7 +67,25 @@ def plot_best_combo_per_metric(df):
     for metric, model in zip(metrics, models_per_metric):
         labels[metric] = model
 
-    fig = px.bar(x=values_per_metric, y=metrics, orientation='h', color=labels,
+    # Start renaming for nice visualizations
+    new_labels = {}
+    metrics_mapper = metrics_renamer()
+    for metric, combo in labels.items():
+        new_metric = metrics_mapper[metric]
+        resampler, clf = combo.split('-')
+        for renamer in CLF_RENAMER:
+            regex, new_name = renamer
+            if re.match(regex, clf):
+                new_clf = new_name
+        for renamer in RESAMPLER_RENAMER:
+            regex, new_name = renamer
+            if re.match(regex, resampler):
+                new_resampler = new_name
+
+        new_combo = "{} - {}".format(new_resampler, new_clf)
+        new_labels[new_metric] = new_combo
+
+    fig = px.bar(x=values_per_metric, y=metrics, orientation='h', color=new_labels,
                  text=values_per_metric, color_discrete_sequence=px.colors.qualitative.Safe,
                  labels={'x': 'value', 'y': 'metric'}, height=800,
                  title='Best model and sampling technique per evaluation metric')
@@ -36,7 +96,8 @@ def plot_before_after(df_imb, df_bal, models):
     sub_titles = ['Before/After for {} model'.format(model) for model in models]
     fig = make_subplots(rows=4, cols=1, subplot_titles=sub_titles)
 
-    metrics = df_imb.columns.to_list()
+    metrics = list(metrics_renamer().values())
+
     for i, model in enumerate(models):
         for idx in df_imb.index:
             if model in idx:
