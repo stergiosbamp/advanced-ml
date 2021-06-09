@@ -21,8 +21,8 @@ RESAMPLER_RENAMER = [
     (r'(.+)?ADASYN', "ADASYN"),
     (r'(.+)?BorderlineSMOTE', "Borderline SMOTE"),
     (r'(.+)?NearMiss', "Nearmiss (v1)"),
-    (r'(.+)?RandomOverSampler', "Random over-sampling"),
-    (r'(.+)?RandomUnderSampler', "Random under-sampling"),
+    (r'(.+)?RandomOverSampler', "Random oversampling"),
+    (r'(.+)?RandomUnderSampler', "Random undersampling"),
     (r'(.+)?SMOTE', "SMOTE"),
     (r'(.+)?SMOTE-TomekLinks', "SMOTE - Tomek links"),
     (r'(.+)?TomekLinks', "Tomek links"),
@@ -146,4 +146,4 @@ if __name__ == '__main__':
     # Confusion matrix before/after MLP
     plot_confusion_matrix('./results/confusion-matrices/MLP.json', 'MLP')
     plot_confusion_matrix('./results/confusion-matrices/RandomUnderSampler(random_state=4)-MLP.json',
-                          'Random under sampling - MLP')
+                          'Random undersampling - MLP')
