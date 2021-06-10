@@ -40,7 +40,8 @@ def metrics_renamer():
 
 def plot_imbalance(df):
     # Rename classifiers from json files
-    old_indices = df.index.to_list()
+    copy_df = df.copy()
+    old_indices = copy_df.index.to_list()
     new_indices = []
 
     for ind in old_indices:
@@ -48,11 +49,11 @@ def plot_imbalance(df):
             regex, new_name = renamer
             if re.match(regex, ind):
                 new_indices.append(new_name)
-    df.index = new_indices
+    copy_df.index = new_indices
 
     # Rename metrics
-    df.rename(columns=metrics_renamer(), inplace=True)
-    fig = px.bar(df, barmode='group', color_discrete_sequence=px.colors.qualitative.Safe,
+    copy_df.rename(columns=metrics_renamer(), inplace=True)
+    fig = px.bar(copy_df, barmode='group', color_discrete_sequence=px.colors.qualitative.Safe,
                  title='Performance without handling imbalance',
                  width=1000, height=1000)
     fig.show()
@@ -137,7 +138,7 @@ if __name__ == '__main__':
     plot_best_combo_per_metric(df_bal)
 
     plot_before_after(df_imbal, df_bal, ['MLP', 'LogisticRegression', 'GradientBoosting', 'RandomForest'])
-
+    exit()
     # Confusion matrix before/after GD
     plot_confusion_matrix('./results/confusion-matrices/GradientBoostingClassifier(random_state=4).json', 'Gradient Boosting')
     plot_confusion_matrix('./results/confusion-matrices/SMOTE(random_state=4)-GradientBoostingClassifier(random_state=4).json',
