@@ -52,10 +52,28 @@ Link: https://www.kaggle.com/andrewmvd/fetal-health-classification
 
 **Dataset**
 
+NIH chest X-rays images to predict 14 possible deseases.
+However an X-ray may be annotated with more than one desease.
+
+Link: https://www.kaggle.com/nih-chest-xrays/data
+
 
 **Methods**
 
+Extract features via pre-trained convolutional neural network. 
+We utilize the **Xception** model and apply **fine-tuning** on our dataset, with
+- *binary-cross* entropy loss function
+- *BP-MLL* loss functions
 
+
+*Multi-label classification techniques*
+
+- Binary Relevance
+- Classifier chain
+- Label Powerset
+- Random K-Labelsets (RAKEL)
+
+with SGD classifier as a base classifier.
 
 ## Project setup
 
