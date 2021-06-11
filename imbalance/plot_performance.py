@@ -138,7 +138,7 @@ if __name__ == '__main__':
     plot_best_combo_per_metric(df_bal)
 
     plot_before_after(df_imbal, df_bal, ['MLP', 'LogisticRegression', 'GradientBoosting', 'RandomForest'])
-    exit()
+    
     # Confusion matrix before/after GD
     plot_confusion_matrix('./results/confusion-matrices/GradientBoostingClassifier(random_state=4).json', 'Gradient Boosting')
     plot_confusion_matrix('./results/confusion-matrices/SMOTE(random_state=4)-GradientBoostingClassifier(random_state=4).json',
